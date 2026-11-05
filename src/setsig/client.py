@@ -11,6 +11,13 @@ from .errors import (
     AuthenticationError,
     GeofenceOutOfBoundsError,
     InsufficientCreditsError,
+    PaywallBlockedError,
+    CrossBorderCreditRequiredError,
+    PaywallTierRequiredError,
+    AttestationFailedError,
+    VisualProofRequiredError,
+    StaleVisualProofError,
+    InvalidImageHashError,
     RateLimitError,
     ReplayAttackError,
     SetsigError,
@@ -118,6 +125,21 @@ class _HTTPClient:
                         body=err_dict,
                     )
                     continue
+
+                if code == "ERR_PAYWALL_BLOCKED":
+                    raise PaywallBlockedError(message=err_msg, status_code=status, code=code, body=err_dict)
+                if code == "ERR_CROSS_BORDER_CREDIT_REQUIRED":
+                    raise CrossBorderCreditRequiredError(message=err_msg, status_code=status, code=code, body=err_dict)
+                if code == "ERR_PAYWALL_TIER_REQUIRED":
+                    raise PaywallTierRequiredError(message=err_msg, status_code=status, code=code, body=err_dict)
+                if code == "ERR_ATTESTATION_FAILED":
+                    raise AttestationFailedError(message=err_msg, status_code=status, code=code, body=err_dict)
+                if code == "ERR_VISUAL_PROOF_REQUIRED":
+                    raise VisualProofRequiredError(message=err_msg, status_code=status, code=code, body=err_dict)
+                if code == "ERR_STALE_VISUAL_PROOF":
+                    raise StaleVisualProofError(message=err_msg, status_code=status, code=code, body=err_dict)
+                if code == "ERR_INVALID_IMAGE_HASH":
+                    raise InvalidImageHashError(message=err_msg, status_code=status, code=code, body=err_dict)
 
                 if status in (401, 403):
                     raise AuthenticationError(

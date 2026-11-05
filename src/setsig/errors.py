@@ -1,6 +1,6 @@
 """Exception hierarchy for the setsig Python SDK."""
 
-from typing import Optional
+from typing import Optional, Any, Dict
 
 
 class SetsigError(Exception):
@@ -11,7 +11,7 @@ class SetsigError(Exception):
         message: str,
         status_code: Optional[int] = None,
         code: Optional[str] = None,
-        body: Optional[dict] = None,
+        body: Optional[Dict[str, Any]] = None,
     ):
         super().__init__(message)
         self.message = message
@@ -33,6 +33,48 @@ class AuthenticationError(SetsigError):
 
 class InsufficientCreditsError(SetsigError):
     """Raised when account credit balance is depleted (HTTP 402)."""
+
+
+class PaywallBlockedError(SetsigError):
+    """Raised when verification services are locked due to zero/depleted prepaid balance (HTTP 402)."""
+
+    def __init__(
+        self,
+        message: str = "Verification services locked due to depleted prepaid balance",
+        status_code: int = 402,
+        code: str = "ERR_PAYWALL_BLOCKED",
+        body: Optional[Dict[str, Any]] = None,
+    ):
+        super().__init__(message, status_code=status_code, code=code, body=body)
+        details = (body or {}).get("details", {})
+        self.paywall_url: Optional[str] = details.get("paywall_url")
+        self.current_balance: Optional[float] = details.get("current_balance")
+        self.required_min_topup: Optional[float] = details.get("required_min_topup")
+        self.currency: Optional[str] = details.get("currency")
+
+
+class CrossBorderCreditRequiredError(SetsigError):
+    """Raised when verifying at an international venue without local currency or FX buffer (HTTP 402)."""
+
+
+class PaywallTierRequiredError(SetsigError):
+    """Raised when requested feature requires a higher tier plan or subscription (HTTP 403)."""
+
+
+class AttestationFailedError(SetsigError):
+    """Raised when hardware attestation fails due to rooted device or emulator (HTTP 403)."""
+
+
+class VisualProofRequiredError(SetsigError):
+    """Raised when venue policy mandates photographic proof of presence (HTTP 422)."""
+
+
+class StaleVisualProofError(SetsigError):
+    """Raised when photo timestamp exceeds 10-second cryptographic tolerance (HTTP 400)."""
+
+
+class InvalidImageHashError(SetsigError):
+    """Raised when photo SHA-256 hash does not match uploaded cloud image (HTTP 400)."""
 
 
 class ReplayAttackError(SetsigError):
@@ -64,4 +106,3 @@ class RateLimitError(SetsigError):
 
 class SignatureVerificationError(SetsigError):
     """Raised when webhook signature verification fails or timestamp expired."""
-
