@@ -19,9 +19,11 @@ from .types import (
     BillingBalance,
     EstimateCostResponse,
     GenerateTokenResponse,
+    TerminalSessionResponse,
     TokenFormat,
     Venue,
     VerifySessionResponse,
+    VisualProofPayload,
     VisualProofSummary,
 )
 from .webhooks import Webhooks
@@ -430,8 +432,35 @@ class VenuesResource:
             dynamic_seed_secret=data.get("dynamic_seed_secret"),
         )
 
+    def rotate_secret(self, venue_id: str) -> Dict[str, Any]:
+        """Rotates cryptographic TOTP secret for a venue."""
+        res = self._http.request("POST", f"/v1/venues/{venue_id}/rotate-secret")
+        return res.get("data", res)
+
     def delete(self, venue_id: str) -> None:
         self._http.request("DELETE", f"/v1/venues/{venue_id}")
+
+
+class TerminalsResource:
+    """Manages kiosk displays and Gatekeeper turnstile sessions."""
+
+    def __init__(self, http_client: _HTTPClient):
+        self._http = http_client
+
+    def create_session(self, terminal_key: str, venue_id: str) -> TerminalSessionResponse:
+        payload = {
+            "terminal_key": terminal_key,
+            "venue_id": venue_id,
+        }
+        res = self._http.request("POST", "/v1/terminals/session", body=payload)
+        data = res.get("data", res)
+        return TerminalSessionResponse(
+            status=data.get("status", "authenticated"),
+            terminal_session_token=data.get("terminal_session_token", ""),
+            venue_name=data.get("venue_name", "Turnstile Display"),
+            totp_interval_seconds=data.get("totp_interval_seconds", 60),
+            scope=data.get("scope", "tokens:generate_only"),
+        )
 
 
 class BillingResource:
@@ -498,5 +527,6 @@ class Setsig:
         self.sessions = SessionsResource(self._http)
         self.venues = VenuesResource(self._http)
         self.billing = BillingResource(self._http)
+        self.terminals = TerminalsResource(self._http)
         self.webhooks = Webhooks(secret=webhook_secret)
 

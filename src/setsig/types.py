@@ -31,6 +31,14 @@ class GenerateTokenResponse:
 
 
 @dataclass
+class VisualProofPayload:
+    image_hash_sha256: str
+    storage_key: str
+    captured_at: str
+    liveness_score: Optional[float] = None
+
+
+@dataclass
 class VerifySessionRequest:
     venue_id: str
     token_id: str
@@ -43,6 +51,7 @@ class VerifySessionRequest:
     heading: Optional[float] = None
     attestation_token: Optional[str] = None
     visual_proof_token: Optional[str] = None
+    visual_proof: Optional[VisualProofPayload] = None
     client_ip: Optional[str] = None
 
 
@@ -82,6 +91,11 @@ class Venue:
     status: str
     created_at: str
     updated_at: str
+    reference_id: Optional[str] = None
+    country_code: Optional[str] = None
+    hardware_profile: Optional[str] = None
+    hardware_config: Optional[Dict[str, Any]] = None
+    visual_proof_prompt: Optional[str] = None
     dynamic_seed_secret: Optional[str] = None
 
 
@@ -91,16 +105,41 @@ class CreateVenueRequest:
     latitude: float
     longitude: float
     radius_meters: float
+    reference_id: Optional[str] = None
+    country_code: Optional[str] = None
+    hardware_profile: Optional[str] = None
+    hardware_config: Optional[Dict[str, Any]] = None
     strict_attestation: bool = False
     strict_visual_proof: bool = False
+    visual_proof_prompt: Optional[str] = None
 
 
 @dataclass
 class UpdateVenueRequest:
     name: Optional[str] = None
+    reference_id: Optional[str] = None
+    country_code: Optional[str] = None
     radius_meters: Optional[float] = None
+    hardware_profile: Optional[str] = None
+    hardware_config: Optional[Dict[str, Any]] = None
     strict_attestation: Optional[bool] = None
     strict_visual_proof: Optional[bool] = None
+    visual_proof_prompt: Optional[str] = None
+
+
+@dataclass
+class TerminalSessionRequest:
+    terminal_key: str
+    venue_id: str
+
+
+@dataclass
+class TerminalSessionResponse:
+    status: str
+    terminal_session_token: str
+    venue_name: str
+    totp_interval_seconds: int
+    scope: str
 
 
 @dataclass
