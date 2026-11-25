@@ -79,7 +79,7 @@ except InsufficientCreditsError as e:
 
 ### 3. Verify Incoming Webhooks (Timing-Safe Comparison)
 
-Patent-protected replay resistance and timing attack mitigation:
+Cryptographic replay resistance and timing attack mitigation:
 
 ```python
 from setsig import Webhooks, SignatureVerificationError
