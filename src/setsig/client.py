@@ -80,6 +80,7 @@ class _HTTPClient:
             req.add_header("Content-Type", "application/json")
             req.add_header("Accept", "application/json")
             req.add_header("User-Agent", f"setsig-python/{SDK_VERSION}")
+            req.add_header("X-Setsig-Client", f"sdk-python/{SDK_VERSION}")
             if idempotency_key:
                 req.add_header("Idempotency-Key", idempotency_key)
 
